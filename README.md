@@ -2,10 +2,10 @@
 A variant concordance pipeline for benchmarking NGS callers against truth sets.
 Concordia automates the comparison of VCF files using RTG Tools' vcfeval, annotates discordant variants with likely failure modes, and produces an interactive HTML report.
 
-# Background
+## Background
 Evaluating variant caller performance requires more than counting matches and mismatches — discordant variants need context. Are they in low-complexity regions? High GC content? Caller-filtered? Concordia answers these questions systematically, turning a raw vcfeval result into an annotated, interpretable report. The pipeline supports multiple samples via a CSV samplesheet and processes them in parallel, making it practical for batch benchmarking runs.
 
-# Pipeline overview
+## Pipeline overview
 Concordia is structured as three Python modules orchestrated by a Nextflow workflow:
 
 main.nf — Nextflow workflow entry point, parameter handling
@@ -13,7 +13,7 @@ Reference prep & vcfeval — FASTA indexing, RTG vcfeval execution
 Discordant annotation — failure mode annotation per variant
 Report prep — TSV generation, Quarto HTML report
 
-## Failure mode annotations
+### Failure mode annotations
 
 Each discordant variant is annotated with one or more of the following flags:
 
@@ -28,7 +28,7 @@ Each discordant variant is annotated with one or more of the following flags:
 
 Annotations are computed using `pyBigWig` for GC content and `pybedtools` for interval-based overlap.
 
-# Inputs
+## Inputs
 
 samplesheet (CSV, required): columns — sample_name, run_id, baseline, query
 targets_bed (BED, optional): target regions file — required for WES, targeted panel, and amplicon assays
@@ -36,7 +36,7 @@ mode: germline or somatic
 build: hg19 or hg38
 assay_type: wgs, wes, targeted_panel, or amplicon
 
-# Outputs
+## Outputs
 
 vcfeval/ — raw vcfeval output including summary.txt
 discordance_modes/ — TSV files per failure mode
@@ -48,7 +48,7 @@ Genome FASTA downloaded at runtime from UCSC (hg19: https://hgdownload.soe.ucsc.
 GC content: gc5Base.bw from UCSC Genome Browser track (hg19/hg38)
 Low complexity regions and segmental duplications: GIAB Genome Stratifications v3.6 (https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.6/)
 
-# Container
+## Container
 
 Base image: realtimegenomics/rtg-tools:3.13
 Python dependencies: requests, pandas, cyvcf2, pybedtools, pyBigWig
