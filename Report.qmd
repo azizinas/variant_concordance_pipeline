@@ -1,0 +1,194 @@
+---
+title: "Variant Concordance Report"
+format: 
+  html:
+    page-layout: full
+    mainfont: "Arial"
+    theme: sandstone
+    echo: false
+    warning: false
+    message: false
+    
+editor: visual
+---
+
+```{=html}
+<style>
+h2 { margin-top: 0.5rem; margin-bottom: 0.3rem; }
+.cell { margin-bottom: 0.3rem; }
+</style>
+```
+
+```{r}
+library(UpSetR)
+library(DT)
+```
+
+## Sample Information
+
+```{r}
+DT::datatable(
+  read.delim("report_inputs/metadata.tsv"),
+  rownames = FALSE,
+  options = list(
+    scrollX = TRUE,
+    dom = "t",
+    autoWidth = FALSE,
+    ordering = FALSE,
+    columnDefs = list(
+      list(targets = 0, width = "200px", className = "dt-left"),
+      list(targets = 1, width = "80px",  className = "dt-center"),
+      list(targets = 2, width = "60px",  className = "dt-center"),
+      list(targets = 3, width = "80px",  className = "dt-center"),
+      list(targets = 4, width = "200px", className = "dt-left"),
+      list(targets = 5, width = "200px", className = "dt-left")
+    )
+  )
+)
+
+```
+
+## Overall Counts
+
+```{r}
+DT::datatable(
+  read.delim("report_inputs/overall_counts.tsv"),
+  rownames = FALSE,
+  options = list(
+    scrollX = TRUE,
+    dom = "t",
+    autoWidth = FALSE,
+    ordering = FALSE,
+    columnDefs = list(
+      list(targets = 0, width = "200px", className = "dt-left"),
+      list(targets = 1, width = "100px", className = "dt-center"),
+      list(targets = 2, width = "60px",  className = "dt-center"),
+      list(targets = 3, width = "80px",  className = "dt-center"),
+      list(targets = 4, width = "60px",  className = "dt-center"),
+      list(targets = 5, width = "80px",  className = "dt-center"),
+      list(targets = 6, width = "60px",  className = "dt-center"),
+      list(targets = 7, width = "80px",  className = "dt-center")
+    )
+  )
+)
+```
+
+## Overall Performance
+
+```{r}
+DT::datatable(
+  read.delim("report_inputs/overall_performance.tsv"),
+  rownames = FALSE,
+  options = list(
+    scrollX = TRUE,
+    dom = "t",
+    autoWidth = FALSE,
+    ordering = FALSE,
+    columnDefs = list(
+      list(targets = 0, width = "200px", className = "dt-left"),
+      list(targets = 1, width = "100px", className = "dt-center"),
+      list(targets = 2, width = "100px", className = "dt-center"),
+      list(targets = 3, width = "100px", className = "dt-center")
+    )
+  )
+)
+```
+
+## Discordant Variants Plot
+
+```{r}
+#| fig.width: 14
+#| fig.height: 7
+#| fig.cap: "UpSet plot showing intersections of discordant variant failure modes. Set sizes (left bars) show total variants per failure mode. Intersection sizes (top bars) show variants shared across multiple failure modes. Only the top 15 most frequent intersections are shown."
+
+variants <- read.csv("discordance_modes/all_variants.tsv", sep="\t")
+
+upset_data <- as.data.frame(lapply(
+  variants[, c("GT_DISCORDANT", "HIGH_GC", "HIGH_AT",
+               "LOW_COMPLEXITY", "SEGMENTAL_DUPLICATION",
+               "CALLER_SPECIFIC")],
+  function(x) as.integer(x == "YES")
+))
+
+sets <- c("GT_DISCORDANT", "HIGH_GC", "HIGH_AT",
+          "LOW_COMPLEXITY", "SEGMENTAL_DUPLICATION", "CALLER_SPECIFIC")
+
+upset(
+  upset_data,
+  order.by      = "freq",
+  nsets         = 6,
+  nintersects   = 15,
+  number.angles = 45,
+  point.size    = 3,
+  line.size     = 1,
+  text.scale    = c(1.5, 1.5, 1.5, 1.2, 1.5, 1.5),
+  main.bar.color = "#2E4057",
+  sets.bar.color = "#F26822",
+  mb.ratio      = c(0.6, 0.4)
+)
+```
+
+## Discordance Type Table
+
+::: panel-tabset
+## All Discordant Variants
+
+```{r}
+DT::datatable(read.csv("discordance_modes/all_variants.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE))
+
+```
+
+## GT Discordant
+
+```{r}
+DT::datatable(read.csv("discordance_modes/gt_discordant.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE)) 
+```
+
+## High GC
+
+```{r}
+DT::datatable(read.csv("discordance_modes/high_gc.tsv", sep="\t"), filter = "top", rownames= FALSE, options = list(scrollX = TRUE))
+```
+
+## High AT
+
+```{r}
+DT::datatable(read.csv("discordance_modes/high_at.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE))
+```
+
+## Low Complexity
+
+```{r}
+DT::datatable(read.csv("discordance_modes/low_complexity.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE))
+```
+
+## Segmental Dup
+
+```{r}
+DT::datatable(read.csv("discordance_modes/segmental_dup.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE))
+```
+
+## Caller Specific
+
+```{r}
+DT::datatable(read.csv("discordance_modes/caller_specific.tsv", sep="\t"), filter = "top", rownames = FALSE, options = list(scrollX = TRUE))
+```
+:::
+
+## Discordance Mode Types
+
+Discordant variants were annotated with potential contributing factors. Multiple factors may apply to a single variant.\
+
+-   **GT_DISCORDANT**: Variant detected in both truth and query, but genotype differs.
+
+-   **HIGH_GC**: Variant falls in a high GC-content region, which may reduce sequencing or mapping quality.
+
+-   **HIGH_AT**: Variant falls in an AT-rich region that may affect sequencing stability.
+
+-   **LOW_COMPLEXITY**: Variant is located in a repeat or homopolymer region, which can lead to alignment ambiguity.
+
+-   **SEGMENTAL_DUPLICATION**: Variant lies in a duplicated genomic region where reads may map to multiple locations.
+
+-   **CALLER_SPECIFIC**: Variant was detected by one caller but not the other, includes whether it was filtered or not detected at all.
+
+**Note on Caller Specific variants:** Variants where one callset either filtered or did not detect a variant called by the other are flagged as Caller Specific and appear in the Caller Specific table. The RAW_FILTER column indicates whether the variant was actively filtered (filter tag shown) or never detected (NOT_CALLED).
