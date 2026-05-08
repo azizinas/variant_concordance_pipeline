@@ -1,39 +1,32 @@
-# concordia
+# Concordia - A variant concordance pipeline
 A variant concordance pipeline for benchmarking NGS callers against truth sets.
 Concordia automates the comparison of VCF files using RTG Tools' vcfeval, annotates discordant variants with likely failure modes, and produces an interactive HTML report.
+
 # Background
-Evaluating variant caller performance requires more than counting matches and mismatches — discordant variants need context. Are they in low-complexity regions? High GC content? Caller-filtered? Concordia answers these questions systematically, turning a raw vcfeval result into an annotated, interpretable report.
+Evaluating variant caller performance requires more than counting matches and mismatches — discordant variants need context. Are they in low-complexity regions? High GC content? Caller-filtered? Concordia answers these questions systematically, turning a raw vcfeval result into an annotated, interpretable report. The pipeline supports multiple samples via a CSV samplesheet and processes them in parallel, making it practical for batch benchmarking runs.
+
 # Pipeline overview
 Concordia is structured as three Python modules orchestrated by a Nextflow workflow:
 
-Input VCFs + Reference
-        │
-        ▼
-┌─────────────────────┐
-│     main.nf         │  Nextflow workflow, parameter handling
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  1. Reference prep  │  FASTA indexing, vcfeval execution
-│     & vcfeval       │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  2. Discordant      │  Failure mode annotation per variant
-│     annotation      │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  3. Report prep     │  TSV generation, Quarto HTML report
-└─────────────────────┘
+main.nf — Nextflow workflow entry point, parameter handling
+Reference prep & vcfeval — FASTA indexing, RTG vcfeval execution
+Discordant annotation — failure mode annotation per variant
+Report prep — TSV generation, Quarto HTML report
 
-# Failure mode annotations
+## Failure mode annotations
+
 Each discordant variant is annotated with one or more of the following flags:
-FlagDescriptionGT_DISCORDANCEVariant called but genotype differs from truthHIGH_GCVariant falls in a high GC/AT content region (via hg38.gc5Base.bw)LOW_COMPLEXITYVariant overlaps a low-complexity or repeat regionSEGDUPVariant falls within a segmental duplicationCALLER_FILTERVariant was soft-filtered by the callerREGION_BASEDVariant falls outside callable regions
-Annotations are computed using pyBigWig for GC content and pybedtools for interval-based overlap.
+
+| Flag | Description |
+|------|-------------|
+| `GT_DISCORDANCE` | Variant called but genotype differs from truth |
+| `HIGH_GC` | Variant falls in a high GC/AT content region (via `hg38.gc5Base.bw`) |
+| `LOW_COMPLEXITY` | Variant overlaps a low-complexity or repeat region |
+| `SEGDUP` | Variant falls within a segmental duplication |
+| `CALLER_FILTER` | Variant was soft-filtered by the caller |
+| `REGION_BASED` | Variant falls outside callable regions |
+
+Annotations are computed using `pyBigWig` for GC content and `pybedtools` for interval-based overlap.
 
 # Inputs
 
