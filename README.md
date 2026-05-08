@@ -3,7 +3,7 @@ A variant concordance pipeline for benchmarking NGS callers against truth sets.
 Concordia automates the comparison of VCF files using RTG Tools' vcfeval, annotates discordant variants with likely failure modes, and produces an interactive HTML report.
 
 ## Background
-Evaluating variant caller performance requires more than counting matches and mismatches — discordant variants need context. Are they in low-complexity regions? High GC content? Caller-filtered? Concordia answers these questions systematically, turning a raw vcfeval result into an annotated, interpretable report. The pipeline supports multiple samples via a CSV samplesheet and processes them in parallel, making it practical for batch benchmarking runs.
+Evaluating variant caller performance requires more than counting matches and mismatches, discordant variants need context. Are they in low-complexity regions? High GC content? Caller-filtered? Concordia answers these questions systematically, turning a raw vcfeval result into an annotated, interpretable report. The pipeline supports multiple samples via a CSV samplesheet and processes them in parallel, making it practical for batch benchmarking runs.
 
 ## Pipeline overview
 Concordia is structured as three Python modules orchestrated by a Nextflow workflow:
